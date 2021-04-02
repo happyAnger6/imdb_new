@@ -11,7 +11,6 @@
 #include <map>
 
 namespace imdb {
-using namespace std;
 
 class FieldBase{
 public:
@@ -19,12 +18,6 @@ public:
     virtual int operator=(uint8_t data) { return 0; }
     virtual bool operator==(const FieldBase& other) = 0;
     virtual const void* value() const = 0;
-};
-
-class FieldT{
-public:
-    virtual bool operator==(const FieldT& other) { return false; }
-    virtual int operator=(const FieldT& other) { return 0; }
 };
 
 template<typename T>
@@ -71,9 +64,12 @@ public:
     int pos = P;
     int offset = O;
     int len = L;
+    const char* name;
+
+    FieldFactory(const char *name) :name(name) {}
     FieldBase* CreateField()
     {
-        return new Field<T>;
+        return new T;
     }
 };
 
@@ -85,14 +81,18 @@ public:
 };
 
 
-template<int N>
-bool operator<(const std::array<FieldBase*, N>& lhs, const std::array<FieldBase*, N>& rhs)
+bool operator<(const std::vector<FieldBase*>& lhs, const std::vector<FieldBase*>& rhs)
 {
-    for(auto i = 0; i < N; i++) {
-        if (*(lhs[i]) < *(rhs[i])) {
-            return true;
-        }
+    if (lhs.size() != rhs.size())
+        return false;
+
+    for(auto i = 0; i < lhs.size(); i++) {
+        if (*(lhs[i]) == *(rhs[i]))
+            continue;
+
+        return *(lhs[i]) < *(rhs[i]);
     }
+
     return false;
 }
 
@@ -101,12 +101,12 @@ class Table : public Field<T>, public TableBase{
 std::array<FieldBase*, N> values;
 std::array<FieldBase*, PK> pks;
 
-void *key_data;
-map<std::array<FieldBase*, PK>, FieldBase*> database;
+std::map<int, std::map<std::vector<FieldBase*>&, FieldBase*>> database;
 
 public:
 static std::array<FieldFactoryBase*, N> fields;
 static std::array<int, PK> primary_keys;
+static std::map<int, std::vector<int> &> indexes;
 
 public:
     Table() 
@@ -131,7 +131,6 @@ public:
             values[i++] = nullptr;
         }
     }
-
 
     int save()
     {
