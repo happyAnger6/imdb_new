@@ -12,15 +12,21 @@ using VRF_CLASS_DATA_IMDB_TABLE = Table<5, 4, VRF_CLASS_DATA>;
 
 template<>
 std::array<FieldFactoryBase*, 5> VRF_CLASS_DATA_IMDB_TABLE::fields = {
-    new FieldFactory<0, 0, sizeof(uint32_t), uint32_t>,
-    new FieldFactory<1, 4, sizeof(uint32_t), uint32_t>,
-    new FieldFactory<2, 8, sizeof(uint32_t), uint32_t>,
-    new FieldFactory<3, 12, sizeof(uint32_t), uint32_t>,
-    new FieldFactory<4, 16, sizeof(uint8_t), uint8_t>,
+    new FieldFactory<0, 0, sizeof(uint32_t), Field<uint32_t>>("table_id"),
+    new FieldFactory<1, 4, sizeof(uint32_t), Field<uint32_t>>("producer_pid"),
+    new FieldFactory<2, 8, sizeof(uint32_t), Field<uint32_t>>("vr_id"),
+    new FieldFactory<3, 12, sizeof(uint32_t), Field<uint32_t>>("vrf_index"),
+    new FieldFactory<4, 16, sizeof(uint8_t), Field<uint8_t>>("vrf_data_machine"),
 };
 
 template<>
 std::array<int, 4> VRF_CLASS_DATA_IMDB_TABLE::primary_keys = {0, 1, 2, 3};
+
+template<>
+std::map<int, std::vector<std::tuple<int, int>>> VRF_CLASS_DATA_IMDB_TABLE::indexes = {
+    {1, {{0, 1}, {1, 1}},
+    {2, {{0, 1}, {2, 1}},
+}
 
 int db_create_vrf_class_data_obj(db_object_type object_type, db_conn_type conn_type, db_object* object)
 {
